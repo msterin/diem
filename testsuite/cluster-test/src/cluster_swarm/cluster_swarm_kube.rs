@@ -21,6 +21,7 @@ use crate::{cluster_swarm::ClusterSwarm, instance::Instance};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
 use crate::instance::{
+    cluster_test_utils_image, image_repo,
     ApplicationConfig::{Fullnode, Validator, Vault, LSR},
     InstanceConfig,
 };
@@ -166,6 +167,7 @@ impl ClusterSwarmKube {
             pod_name = pod_name,
             image_tag = image_tag,
             node_name = node_name,
+            image_repo = &image_repo(),
         );
         let pod_spec = get_spec_instance_from_template(pod_yaml)?;
 
@@ -180,6 +182,7 @@ impl ClusterSwarmKube {
             include_str!(VAULT_SPEC_TEMPLATE!()),
             validator_index = validator_index,
             node_name = node_name,
+            image_repo = &image_repo(),
         );
         let pod_spec = get_spec_instance_from_template(pod_yaml)?;
 
@@ -205,6 +208,7 @@ impl ClusterSwarmKube {
             pod_name = pod_name,
             image_tag = image_tag,
             node_name = node_name,
+            image_repo = &image_repo(),
         );
         get_spec_instance_from_template(pod_yaml)
     }
@@ -421,7 +425,7 @@ impl ClusterSwarmKube {
                     include_str!(JOB_TEMPLATE!()),
                     name = &job_name,
                     label = "remove-network-effects",
-                    image = "853397791086.dkr.ecr.us-west-2.amazonaws.com/cluster-test-util:latest",
+                    image = &cluster_test_utils_image(),
                     node_name = node.name,
                     command = "tc qdisc delete dev eth0 root || true",
                     back_off_limit = back_off_limit,
@@ -674,7 +678,7 @@ impl ClusterSwarmKube {
     ) -> Result<()> {
         self.run(
             k8s_node,
-            "853397791086.dkr.ecr.us-west-2.amazonaws.com/cluster-test-util:latest",
+            &cluster_test_utils_image(),
             command.as_ref(),
             job_name,
         )

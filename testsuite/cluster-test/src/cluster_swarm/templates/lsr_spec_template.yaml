@@ -15,14 +15,14 @@ spec:
   nodeName: "{node_name}"
   containers:
     - name: fluent-bit
-      image: 853397791086.dkr.ecr.us-west-2.amazonaws.com/fluent-bit:1.3.9
+      image: {image_repo}/fluent-bit:1.3.9
       imagePullPolicy: IfNotPresent
       command: ["/fluent-bit/bin/fluent-bit", "-c", "/opt/diem/data/fluent-bit/fluent-bit.conf"]
       volumeMounts:
       - mountPath: /opt/diem/data
         name: diem-data
     - name: main
-      image: 853397791086.dkr.ecr.us-west-2.amazonaws.com/diem/validator_tcb:{image_tag}
+      image: {image_repo}/diem/validator_tcb:{image_tag}
       imagePullPolicy: Always
       command: ["/opt/diem/bin/safety-rules", "/opt/diem/etc/node.yaml"]
       ports:
