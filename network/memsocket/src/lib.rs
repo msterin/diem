@@ -64,7 +64,7 @@ impl Drop for MemoryListener {
     fn drop(&mut self) {
         let mut switchboard = (&*SWITCHBOARD).lock();
         // Remove the Sending side of the channel in the switchboard when
-        // MemoryListener is dropped
+        // MemoryListener is dropped.
         switchboard.0.remove(&self.port);
     }
 }

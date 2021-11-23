@@ -12,12 +12,15 @@ use reqwest::{Client, Url};
 use serde_json::Value;
 use std::{
     collections::HashSet,
-    fmt,
+    env, fmt,
     process::Stdio,
     str::FromStr,
     time::{Duration, Instant},
 };
 use tokio::{process::Command, time};
+
+const IMAGE_REPO_ENV: &str = "DIEM_IMAGE_REPO";
+const IMAGE_REPO_DEFAULT: &str = "853397791086.dkr.ecr.us-west-2.amazonaws.com";
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ValidatorGroup {
@@ -351,12 +354,8 @@ impl Instance {
 
     /// Runs command on the same host in separate utility container based on cluster-test-util image
     pub async fn util_cmd<S: AsRef<str>>(&self, command: S, job_name: &str) -> Result<()> {
-        self.cmd(
-            "853397791086.dkr.ecr.us-west-2.amazonaws.com/cluster-test-util:latest",
-            command,
-            job_name,
-        )
-        .await
+        self.cmd(&cluster_test_utils_image(), command, job_name)
+            .await
     }
 
     /// Unlike util_cmd, exec runs command inside the container
@@ -426,6 +425,18 @@ pub fn instancelist_to_set(instances: &[Instance]) -> HashSet<String> {
         r.insert(instance.peer_name().clone());
     }
     r
+}
+
+pub fn image_repo() -> String {
+    if env::var(IMAGE_REPO_ENV).is_ok() {
+        env::var(IMAGE_REPO_ENV).unwrap()
+    } else {
+        String::from(IMAGE_REPO_DEFAULT)
+    }
+}
+
+pub fn cluster_test_utils_image() -> String {
+    format!("{}/cluster-test-util:latest", &image_repo())
 }
 
 pub fn validator_pod_name(index: u32) -> String {
